@@ -1,28 +1,23 @@
-package ru.mipt.bit.platformer.entity;
+package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Interpolation;
-import ru.mipt.bit.platformer.movement.Direction;
-import ru.mipt.bit.platformer.util.TileMovement;
 
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
 
-public class Tank extends GameEntity {
+public class Tank {
 
     private static final float MOVEMENT_SPEED = 0.4f;
 
-    private final TileMovement tileMovement;
+    private final GridPoint2 position;
     private final GridPoint2 destination;
+    private Direction direction;
     private float movementProgress = 1f;
-    private float rotation = 0f;
 
-    public Tank(TiledMapTileLayer tileLayer, TextureRegion texture, GridPoint2 startPosition) {
-        super(tileLayer, texture, startPosition);
-        destination = new GridPoint2(startPosition);
-        tileMovement = new TileMovement(tileLayer, Interpolation.smooth);
+    public Tank(GridPoint2 startPosition, Direction direction) {
+        this.position = new GridPoint2(startPosition);
+        this.destination = new GridPoint2(startPosition);
+        this.direction = direction;
     }
 
     public boolean isMoving() {
@@ -30,7 +25,7 @@ public class Tank extends GameEntity {
     }
 
     public void rotate(Direction direction) {
-        rotation = direction.getAngle();
+        this.direction = direction;
     }
 
     public void move(Direction direction) {
@@ -43,16 +38,25 @@ public class Tank extends GameEntity {
     }
 
     public void update(float deltaTime) {
-        tileMovement.moveRectangleBetweenTileCenters(bounds, position, destination, movementProgress);
-
         movementProgress = continueProgress(movementProgress, deltaTime, MOVEMENT_SPEED);
         if (!isMoving()) {
             position.set(destination);
         }
     }
 
-    @Override
-    protected float getRotation() {
-        return rotation;
+    public GridPoint2 getPosition() {
+        return new GridPoint2(position);
+    }
+
+    public GridPoint2 getDestination() {
+        return new GridPoint2(destination);
+    }
+
+    public float getMovementProgress() {
+        return movementProgress;
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 }
