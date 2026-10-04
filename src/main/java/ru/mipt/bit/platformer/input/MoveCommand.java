@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.control;
+package ru.mipt.bit.platformer.input;
 
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;

@@ -1,6 +1,5 @@
 package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,49 +12,88 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameLevelTest {
 
+    private static final float SECONDS_PER_TILE = 0.4f;
+
     private Tank tank;
     private GameLevel gameLevel;
 
     @BeforeEach
     void createLevel() {
-        tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
+        tank = new Tank(new Coordinates(1, 1), Direction.RIGHT, SECONDS_PER_TILE);
         gameLevel = new GameLevel(10, 8, tank,
-                Arrays.asList(new Tree(new GridPoint2(1, 2)), new Tree(new GridPoint2(5, 5))));
+                Arrays.asList(new Tree(new Coordinates(1, 2)), new Tree(new Coordinates(5, 5))));
     }
 
     @Test
     void emptyTileIsFree() {
-        assertTrue(gameLevel.isFree(new GridPoint2(4, 4)));
+        assertTrue(gameLevel.isFree(new Coordinates(4, 4)));
     }
 
     @Test
-    void tileWithTreeIsNotFree() {
-        assertFalse(gameLevel.isFree(new GridPoint2(1, 2)));
-        assertFalse(gameLevel.isFree(new GridPoint2(5, 5)));
+    void tileWithObstacleIsNotFree() {
+        assertFalse(gameLevel.isFree(new Coordinates(1, 2)));
+        assertFalse(gameLevel.isFree(new Coordinates(5, 5)));
     }
 
     @Test
     void tileOutsideOfLevelIsNotFree() {
-        assertFalse(gameLevel.isFree(new GridPoint2(-1, 3)));
-        assertFalse(gameLevel.isFree(new GridPoint2(3, -1)));
-        assertFalse(gameLevel.isFree(new GridPoint2(10, 3)));
-        assertFalse(gameLevel.isFree(new GridPoint2(3, 8)));
+        assertFalse(gameLevel.isFree(new Coordinates(-1, 3)));
+        assertFalse(gameLevel.isFree(new Coordinates(3, -1)));
+        assertFalse(gameLevel.isFree(new Coordinates(10, 3)));
+        assertFalse(gameLevel.isFree(new Coordinates(3, 8)));
+    }
+
+    @Test
+    void blocksTileOfAnyObstacleKind() {
+        GameLevel level = new GameLevel(10, 8, tank, Collections.singletonList(new Wall(new Coordinates(2, 2))));
+
+        assertFalse(level.isFree(new Coordinates(2, 2)));
+        assertTrue(level.isFree(new Coordinates(2, 3)));
+    }
+
+    private static class Wall implements GameObject {
+
+        private final Coordinates position;
+
+        Wall(Coordinates position) {
+            this.position = position;
+        }
+
+        @Override
+        public Coordinates getPosition() {
+            return position;
+        }
+
+        @Override
+        public Coordinates getDestination() {
+            return position;
+        }
+
+        @Override
+        public float getMovementProgress() {
+            return 1f;
+        }
+
+        @Override
+        public float getRotation() {
+            return 0f;
+        }
     }
 
     @Test
     void movesTankToFreeTile() {
         gameLevel.moveTank(Direction.RIGHT);
-        gameLevel.update(0.4f);
+        gameLevel.update(SECONDS_PER_TILE);
 
-        assertEquals(new GridPoint2(2, 1), tank.getPosition());
+        assertEquals(new Coordinates(2, 1), tank.getPosition());
     }
 
     @Test
-    void rotatesTankButKeepsItInPlaceWhenTreeBlocksTheWay() {
+    void rotatesTankButKeepsItInPlaceWhenObstacleBlocksTheWay() {
         gameLevel.moveTank(Direction.UP);
-        gameLevel.update(0.4f);
+        gameLevel.update(SECONDS_PER_TILE);
 
-        assertEquals(new GridPoint2(1, 1), tank.getPosition());
+        assertEquals(new Coordinates(1, 1), tank.getPosition());
         assertEquals(Direction.UP, tank.getDirection());
     }
 
@@ -64,9 +102,9 @@ class GameLevelTest {
         GameLevel smallLevel = new GameLevel(2, 2, tank, Collections.emptyList());
 
         smallLevel.moveTank(Direction.RIGHT);
-        smallLevel.update(0.4f);
+        smallLevel.update(SECONDS_PER_TILE);
 
-        assertEquals(new GridPoint2(1, 1), tank.getPosition());
+        assertEquals(new Coordinates(1, 1), tank.getPosition());
         assertEquals(Direction.RIGHT, tank.getDirection());
     }
 
@@ -75,9 +113,16 @@ class GameLevelTest {
         gameLevel.moveTank(Direction.RIGHT);
 
         gameLevel.moveTank(Direction.DOWN);
-        gameLevel.update(0.4f);
+        gameLevel.update(SECONDS_PER_TILE);
 
-        assertEquals(new GridPoint2(2, 1), tank.getPosition());
+        assertEquals(new Coordinates(2, 1), tank.getPosition());
         assertEquals(Direction.RIGHT, tank.getDirection());
+    }
+
+    @Test
+    void showsTankAndObstaclesAsObjectsToDraw() {
+        assertEquals(3, gameLevel.getObjects().size());
+        assertTrue(gameLevel.getObjects().contains(tank));
+        assertTrue(gameLevel.getObjects().containsAll(gameLevel.getObstacles()));
     }
 }

@@ -1,7 +1,5 @@
 package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.math.GridPoint2;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,13 +10,19 @@ public class GameLevel {
     private final int width;
     private final int height;
     private final Tank playerTank;
-    private final List<Tree> trees;
+    private final List<GameObject> obstacles;
+    private final List<GameObject> objects;
 
-    public GameLevel(int width, int height, Tank playerTank, Collection<Tree> trees) {
+    public GameLevel(int width, int height, Tank playerTank, Collection<? extends GameObject> obstacles) {
         this.width = width;
         this.height = height;
         this.playerTank = playerTank;
-        this.trees = Collections.unmodifiableList(new ArrayList<>(trees));
+        this.obstacles = Collections.unmodifiableList(new ArrayList<GameObject>(obstacles));
+
+        List<GameObject> allObjects = new ArrayList<>();
+        allObjects.add(playerTank);
+        allObjects.addAll(this.obstacles);
+        this.objects = Collections.unmodifiableList(allObjects);
     }
 
     public void moveTank(Direction direction) {
@@ -31,12 +35,12 @@ public class GameLevel {
         }
     }
 
-    public boolean isFree(GridPoint2 tile) {
-        if (tile.x < 0 || tile.y < 0 || tile.x >= width || tile.y >= height) {
+    public boolean isFree(Coordinates tile) {
+        if (tile.getX() < 0 || tile.getY() < 0 || tile.getX() >= width || tile.getY() >= height) {
             return false;
         }
-        for (Tree tree : trees) {
-            if (tree.isAt(tile)) {
+        for (GameObject obstacle : obstacles) {
+            if (obstacle.getPosition().equals(tile)) {
                 return false;
             }
         }
@@ -51,7 +55,11 @@ public class GameLevel {
         return playerTank;
     }
 
-    public List<Tree> getTrees() {
-        return trees;
+    public List<GameObject> getObstacles() {
+        return obstacles;
+    }
+
+    public List<GameObject> getObjects() {
+        return objects;
     }
 }
