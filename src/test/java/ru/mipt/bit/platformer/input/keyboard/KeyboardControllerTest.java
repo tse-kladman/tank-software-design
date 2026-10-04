@@ -1,6 +1,7 @@
-package ru.mipt.bit.platformer.control;
+package ru.mipt.bit.platformer.input.keyboard;
 
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.input.Command;
 
 import java.util.ArrayList;
 import java.util.Arrays;

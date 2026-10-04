@@ -1,7 +1,5 @@
 package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.math.GridPoint2;
-
 public enum Direction {
     UP(0, 1, 90f),
     LEFT(-1, 0, -180f),
@@ -22,7 +20,7 @@ public enum Direction {
         return angle;
     }
 
-    public GridPoint2 shift(GridPoint2 point) {
-        return new GridPoint2(point).add(dx, dy);
+    public Coordinates shift(Coordinates from) {
+        return from.shift(dx, dy);
     }
 }

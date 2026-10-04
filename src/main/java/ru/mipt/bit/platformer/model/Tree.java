@@ -1,20 +1,30 @@
 package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.math.GridPoint2;
+public class Tree implements GameObject {
 
-public class Tree {
+    private final Coordinates position;
 
-    private final GridPoint2 position;
-
-    public Tree(GridPoint2 position) {
-        this.position = new GridPoint2(position);
+    public Tree(Coordinates position) {
+        this.position = position;
     }
 
-    public boolean isAt(GridPoint2 tile) {
-        return position.equals(tile);
+    @Override
+    public Coordinates getPosition() {
+        return position;
     }
 
-    public GridPoint2 getPosition() {
-        return new GridPoint2(position);
+    @Override
+    public Coordinates getDestination() {
+        return position;
+    }
+
+    @Override
+    public float getMovementProgress() {
+        return 1f;
+    }
+
+    @Override
+    public float getRotation() {
+        return 0f;
     }
 }

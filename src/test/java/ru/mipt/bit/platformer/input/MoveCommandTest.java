@@ -1,7 +1,7 @@
-package ru.mipt.bit.platformer.control;
+package ru.mipt.bit.platformer.input;
 
-import com.badlogic.gdx.math.GridPoint2;
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.Coordinates;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
@@ -14,12 +14,12 @@ class MoveCommandTest {
 
     @Test
     void movesTankInItsOwnDirection() {
-        Tank tank = new Tank(new GridPoint2(1, 1), Direction.RIGHT);
+        Tank tank = new Tank(new Coordinates(1, 1), Direction.RIGHT, 0.4f);
         GameLevel gameLevel = new GameLevel(10, 8, tank, Collections.emptyList());
 
         new MoveCommand(gameLevel, Direction.UP).execute();
         gameLevel.update(0.4f);
 
-        assertEquals(new GridPoint2(1, 2), tank.getPosition());
+        assertEquals(new Coordinates(1, 2), tank.getPosition());
     }
 }

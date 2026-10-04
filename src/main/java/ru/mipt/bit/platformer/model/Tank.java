@@ -1,27 +1,24 @@
 package ru.mipt.bit.platformer.model;
 
-import com.badlogic.gdx.math.GridPoint2;
+public class Tank implements GameObject {
 
-import static com.badlogic.gdx.math.MathUtils.isEqual;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.continueProgress;
+    private static final float MOVEMENT_FINISHED = 1f;
 
-public class Tank {
-
-    private static final float MOVEMENT_SPEED = 0.4f;
-
-    private final GridPoint2 position;
-    private final GridPoint2 destination;
+    private final float secondsPerTile;
+    private Coordinates position;
+    private Coordinates destination;
     private Direction direction;
-    private float movementProgress = 1f;
+    private float movementProgress = MOVEMENT_FINISHED;
 
-    public Tank(GridPoint2 startPosition, Direction direction) {
-        this.position = new GridPoint2(startPosition);
-        this.destination = new GridPoint2(startPosition);
+    public Tank(Coordinates position, Direction direction, float secondsPerTile) {
+        this.position = position;
+        this.destination = position;
         this.direction = direction;
+        this.secondsPerTile = secondsPerTile;
     }
 
     public boolean isMoving() {
-        return !isEqual(movementProgress, 1f);
+        return movementProgress < MOVEMENT_FINISHED;
     }
 
     public void rotate(Direction direction) {
@@ -33,30 +30,38 @@ public class Tank {
             return;
         }
         rotate(direction);
-        destination.set(direction.shift(position));
+        destination = direction.shift(position);
         movementProgress = 0f;
     }
 
     public void update(float deltaTime) {
-        movementProgress = continueProgress(movementProgress, deltaTime, MOVEMENT_SPEED);
+        movementProgress = Math.min(movementProgress + deltaTime / secondsPerTile, MOVEMENT_FINISHED);
         if (!isMoving()) {
-            position.set(destination);
+            position = destination;
         }
-    }
-
-    public GridPoint2 getPosition() {
-        return new GridPoint2(position);
-    }
-
-    public GridPoint2 getDestination() {
-        return new GridPoint2(destination);
-    }
-
-    public float getMovementProgress() {
-        return movementProgress;
     }
 
     public Direction getDirection() {
         return direction;
+    }
+
+    @Override
+    public Coordinates getPosition() {
+        return position;
+    }
+
+    @Override
+    public Coordinates getDestination() {
+        return destination;
+    }
+
+    @Override
+    public float getMovementProgress() {
+        return movementProgress;
+    }
+
+    @Override
+    public float getRotation() {
+        return direction.getAngle();
     }
 }
