@@ -15,50 +15,69 @@ import ru.mipt.bit.platformer.input.InputController;
 import ru.mipt.bit.platformer.input.MoveCommand;
 import ru.mipt.bit.platformer.input.keyboard.GdxKeyboardState;
 import ru.mipt.bit.platformer.input.keyboard.KeyboardController;
-import ru.mipt.bit.platformer.model.Coordinates;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
+import ru.mipt.bit.platformer.model.level.GameLevelFactory;
+import ru.mipt.bit.platformer.model.level.LevelSource;
+import ru.mipt.bit.platformer.model.level.RandomLevelSource;
+import ru.mipt.bit.platformer.model.level.TextLevelSource;
+import ru.mipt.bit.platformer.util.GdxTextFiles;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Random;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
-    private static final String LEVEL_FILE = "level.tmx";
+    private static final String TILED_MAP_FILE = "level.tmx";
+    private static final String LEVEL_LAYOUT_FILE = "level.txt";
+    private static final String RANDOM_LEVEL_ARGUMENT = "random";
     private static final String TANK_TEXTURE = "images/tank_blue.png";
     private static final String TREE_TEXTURE = "images/greenTree.png";
     private static final Color BACKGROUND = new Color(0f, 0f, 0.2f, 1f);
     private static final float TANK_SECONDS_PER_TILE = 0.4f;
-    private static final Coordinates TANK_SPAWN = new Coordinates(1, 1);
-    private static final Coordinates TREE_TILE = new Coordinates(1, 3);
+    private static final Direction TANK_INITIAL_DIRECTION = Direction.RIGHT;
+    private static final int RANDOM_TREES_COUNT = 12;
     private static final int WINDOW_WIDTH = 1280;
     private static final int WINDOW_HEIGHT = 1024;
 
-    private TiledMap level;
+    private final boolean randomLevel;
+
+    private TiledMap tiledMap;
     private GameLevel gameLevel;
     private TextureLibrary textures;
     private LevelRenderer levelRenderer;
     private InputController controller;
 
+    public GameDesktopLauncher(boolean randomLevel) {
+        this.randomLevel = randomLevel;
+    }
+
     @Override
     public void create() {
         // load level tiles
-        level = new TmxMapLoader().load(LEVEL_FILE);
-        TiledMapTileLayer groundLayer = getSingleLayer(level);
+        tiledMap = new TmxMapLoader().load(TILED_MAP_FILE);
+        TiledMapTileLayer groundLayer = getSingleLayer(tiledMap);
 
-        gameLevel = new GameLevel(groundLayer.getWidth(), groundLayer.getHeight(),
-                new Tank(TANK_SPAWN, Direction.RIGHT, TANK_SECONDS_PER_TILE),
-                Collections.singletonList(new Tree(TREE_TILE)));
+        GameLevelFactory levelFactory = new GameLevelFactory(TANK_SECONDS_PER_TILE, TANK_INITIAL_DIRECTION);
+        gameLevel = levelFactory.create(createLevelSource(groundLayer.getWidth(), groundLayer.getHeight()));
 
         textures = new TextureLibrary();
         textures.register(Tank.class, TANK_TEXTURE);
         textures.register(Tree.class, TREE_TEXTURE);
 
-        levelRenderer = new LevelRenderer(gameLevel, level, groundLayer, textures, BACKGROUND);
+        levelRenderer = new LevelRenderer(gameLevel, tiledMap, groundLayer, textures, BACKGROUND);
         controller = createController();
+    }
+
+    private LevelSource createLevelSource(int width, int height) {
+        if (randomLevel) {
+            return new RandomLevelSource(width, height, RANDOM_TREES_COUNT, new Random());
+        }
+        return new TextLevelSource(GdxTextFiles.readLines(LEVEL_LAYOUT_FILE));
     }
 
     private InputController createController() {
@@ -97,13 +116,14 @@ public class GameDesktopLauncher implements ApplicationListener {
         // dispose of all the native resources (classes which implement com.badlogic.gdx.utils.Disposable)
         levelRenderer.dispose();
         textures.dispose();
-        level.dispose();
+        tiledMap.dispose();
     }
 
     public static void main(String[] args) {
+        boolean randomLevel = Arrays.asList(args).contains(RANDOM_LEVEL_ARGUMENT);
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         // level width: 10 tiles x 128px, height: 8 tiles x 128px
         config.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
-        new Lwjgl3Application(new GameDesktopLauncher(), config);
+        new Lwjgl3Application(new GameDesktopLauncher(randomLevel), config);
     }
 }
