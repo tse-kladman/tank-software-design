@@ -9,12 +9,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import ru.mipt.bit.platformer.control.Command;
+import ru.mipt.bit.platformer.control.CommandSource;
+import ru.mipt.bit.platformer.control.CompositeCommandSource;
+import ru.mipt.bit.platformer.control.MoveCommand;
+import ru.mipt.bit.platformer.control.ai.AiCommandSource;
+import ru.mipt.bit.platformer.control.ai.RandomDirectionStrategy;
+import ru.mipt.bit.platformer.control.keyboard.GdxKeyboardState;
+import ru.mipt.bit.platformer.control.keyboard.KeyboardCommandSource;
 import ru.mipt.bit.platformer.graphics.LevelRenderer;
 import ru.mipt.bit.platformer.graphics.TextureLibrary;
-import ru.mipt.bit.platformer.input.InputController;
-import ru.mipt.bit.platformer.input.MoveCommand;
-import ru.mipt.bit.platformer.input.keyboard.GdxKeyboardState;
-import ru.mipt.bit.platformer.input.keyboard.KeyboardController;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
@@ -41,6 +45,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final float TANK_SECONDS_PER_TILE = 0.4f;
     private static final Direction TANK_INITIAL_DIRECTION = Direction.RIGHT;
     private static final int RANDOM_TREES_COUNT = 12;
+    private static final int RANDOM_AI_TANKS_COUNT = 4;
     private static final int WINDOW_WIDTH = 1280;
     private static final int WINDOW_HEIGHT = 1024;
 
@@ -50,7 +55,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     private GameLevel gameLevel;
     private TextureLibrary textures;
     private LevelRenderer levelRenderer;
-    private InputController controller;
+    private CommandSource commandSource;
 
     public GameDesktopLauncher(boolean randomLevel) {
         this.randomLevel = randomLevel;
@@ -70,28 +75,39 @@ public class GameDesktopLauncher implements ApplicationListener {
         textures.register(Tree.class, TREE_TEXTURE);
 
         levelRenderer = new LevelRenderer(gameLevel, tiledMap, groundLayer, textures, BACKGROUND);
-        controller = createController();
+        commandSource = createCommandSource();
     }
 
     private LevelSource createLevelSource(int width, int height) {
         if (randomLevel) {
-            return new RandomLevelSource(width, height, RANDOM_TREES_COUNT, new Random());
+            return new RandomLevelSource(width, height, RANDOM_TREES_COUNT, RANDOM_AI_TANKS_COUNT, new Random());
         }
         return new TextLevelSource(GdxTextFiles.readLines(LEVEL_LAYOUT_FILE));
     }
 
-    private InputController createController() {
-        KeyboardController keyboardController = new KeyboardController(new GdxKeyboardState());
-        keyboardController.bind(new MoveCommand(gameLevel, Direction.UP), Keys.UP, Keys.W);
-        keyboardController.bind(new MoveCommand(gameLevel, Direction.LEFT), Keys.LEFT, Keys.A);
-        keyboardController.bind(new MoveCommand(gameLevel, Direction.DOWN), Keys.DOWN, Keys.S);
-        keyboardController.bind(new MoveCommand(gameLevel, Direction.RIGHT), Keys.RIGHT, Keys.D);
-        return keyboardController;
+    private CommandSource createCommandSource() {
+        return new CompositeCommandSource(Arrays.asList(createKeyboardSource(), createAiSource()));
+    }
+
+    private CommandSource createKeyboardSource() {
+        Tank playerTank = gameLevel.getPlayerTank();
+        KeyboardCommandSource keyboard = new KeyboardCommandSource(new GdxKeyboardState());
+        keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.UP), Keys.UP, Keys.W);
+        keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.LEFT), Keys.LEFT, Keys.A);
+        keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.DOWN), Keys.DOWN, Keys.S);
+        keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.RIGHT), Keys.RIGHT, Keys.D);
+        return keyboard;
+    }
+
+    private CommandSource createAiSource() {
+        return new AiCommandSource(gameLevel.getAiTanks(), new RandomDirectionStrategy(gameLevel, new Random()));
     }
 
     @Override
     public void render() {
-        controller.handleInput();
+        for (Command command : commandSource.commands()) {
+            command.execute();
+        }
         gameLevel.update(Gdx.graphics.getDeltaTime());
         levelRenderer.render();
     }

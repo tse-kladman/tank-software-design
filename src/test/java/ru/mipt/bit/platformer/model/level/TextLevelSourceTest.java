@@ -30,10 +30,10 @@ class TextLevelSourceTest {
     }
 
     @Test
-    void readsTankPositionCountingRowsFromTheBottom() {
+    void readsPlayerTankPositionCountingRowsFromTheBottom() {
         LevelLayout layout = new TextLevelSource(EXAMPLE).load();
 
-        assertEquals(new Coordinates(5, 1), layout.getTankPosition());
+        assertEquals(new Coordinates(5, 1), layout.getPlayerTankPosition());
     }
 
     @Test
@@ -47,11 +47,27 @@ class TextLevelSourceTest {
     }
 
     @Test
+    void levelWithoutEnemiesHasNoAiTanks() {
+        assertTrue(new TextLevelSource(EXAMPLE).load().getAiTankPositions().isEmpty());
+    }
+
+    @Test
+    void readsEveryEnemyTank() {
+        LevelLayout layout = new TextLevelSource(Arrays.asList("E_T", "_X_", "E__")).load();
+
+        assertEquals(2, layout.getAiTankPositions().size());
+        assertTrue(layout.getAiTankPositions().contains(new Coordinates(0, 2)));
+        assertTrue(layout.getAiTankPositions().contains(new Coordinates(0, 0)));
+        assertEquals(new Coordinates(1, 1), layout.getPlayerTankPosition());
+    }
+
+    @Test
     void placesNothingOnEmptyTiles() {
         LevelLayout layout = new TextLevelSource(Arrays.asList("__X", "___")).load();
 
-        assertEquals(new Coordinates(2, 1), layout.getTankPosition());
+        assertEquals(new Coordinates(2, 1), layout.getPlayerTankPosition());
         assertTrue(layout.getTreePositions().isEmpty());
+        assertTrue(layout.getAiTankPositions().isEmpty());
     }
 
     @Test
@@ -63,14 +79,14 @@ class TextLevelSourceTest {
     }
 
     @Test
-    void rejectsLevelWithoutTank() {
-        TextLevelSource source = new TextLevelSource(Arrays.asList("___", "T__"));
+    void rejectsLevelWithoutPlayerTank() {
+        TextLevelSource source = new TextLevelSource(Arrays.asList("___", "T_E"));
 
         assertThrows(IllegalArgumentException.class, source::load);
     }
 
     @Test
-    void rejectsLevelWithTwoTanks() {
+    void rejectsLevelWithTwoPlayerTanks() {
         TextLevelSource source = new TextLevelSource(Arrays.asList("X__", "__X"));
 
         assertThrows(IllegalArgumentException.class, source::load);

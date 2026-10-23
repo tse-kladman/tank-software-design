@@ -27,7 +27,16 @@ public class GameLevelFactory {
             trees.add(new Tree(position));
         }
 
-        Tank playerTank = new Tank(layout.getTankPosition(), tankInitialDirection, tankSecondsPerTile);
-        return new GameLevel(layout.getWidth(), layout.getHeight(), playerTank, trees);
+        List<Tank> aiTanks = new ArrayList<>();
+        for (Coordinates position : layout.getAiTankPositions()) {
+            aiTanks.add(createTank(position));
+        }
+
+        return new GameLevel(layout.getWidth(), layout.getHeight(), createTank(layout.getPlayerTankPosition()),
+                aiTanks, trees);
+    }
+
+    private Tank createTank(Coordinates position) {
+        return new Tank(position, tankInitialDirection, tankSecondsPerTile);
     }
 }

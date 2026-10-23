@@ -9,4 +9,6 @@ public interface GameObject {
     float getMovementProgress();
 
     float getRotation();
+
+    boolean occupies(Coordinates tile);
 }

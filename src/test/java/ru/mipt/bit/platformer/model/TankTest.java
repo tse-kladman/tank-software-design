@@ -87,4 +87,27 @@ class TankTest {
         assertEquals(new Coordinates(1, 1), tank.getPosition());
         assertFalse(tank.isMoving());
     }
+
+    @Test
+    void occupiesOnlyItsTileWhenStandingStill() {
+        assertTrue(tank.occupies(new Coordinates(1, 1)));
+        assertFalse(tank.occupies(new Coordinates(1, 2)));
+    }
+
+    @Test
+    void occupiesBothTilesWhileMoving() {
+        tank.move(Direction.UP);
+
+        assertTrue(tank.occupies(new Coordinates(1, 1)));
+        assertTrue(tank.occupies(new Coordinates(1, 2)));
+    }
+
+    @Test
+    void stopsOccupyingLeftTileAfterArrival() {
+        tank.move(Direction.UP);
+        tank.update(SECONDS_PER_TILE);
+
+        assertFalse(tank.occupies(new Coordinates(1, 1)));
+        assertTrue(tank.occupies(new Coordinates(1, 2)));
+    }
 }

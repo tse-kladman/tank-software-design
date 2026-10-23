@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.input.keyboard;
+package ru.mipt.bit.platformer.control.keyboard;
 
 import com.badlogic.gdx.Gdx;
 

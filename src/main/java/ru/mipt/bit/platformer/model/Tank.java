@@ -61,6 +61,11 @@ public class Tank implements GameObject {
     }
 
     @Override
+    public boolean occupies(Coordinates tile) {
+        return position.equals(tile) || destination.equals(tile);
+    }
+
+    @Override
     public float getRotation() {
         return direction.getAngle();
     }

@@ -8,7 +8,8 @@ import java.util.List;
 public class TextLevelSource implements LevelSource {
 
     private static final char TREE = 'T';
-    private static final char TANK = 'X';
+    private static final char PLAYER_TANK = 'X';
+    private static final char AI_TANK = 'E';
     private static final char EMPTY = '_';
 
     private final List<String> lines;
@@ -27,7 +28,8 @@ public class TextLevelSource implements LevelSource {
         int height = rows.size();
         int width = rows.get(0).length();
         List<Coordinates> trees = new ArrayList<>();
-        Coordinates tankPosition = null;
+        List<Coordinates> aiTanks = new ArrayList<>();
+        Coordinates playerTankPosition = null;
 
         for (int row = 0; row < height; row++) {
             String line = rows.get(row);
@@ -41,11 +43,14 @@ public class TextLevelSource implements LevelSource {
                     case TREE:
                         trees.add(tile);
                         break;
-                    case TANK:
-                        if (tankPosition != null) {
-                            throw new IllegalArgumentException("Level describes more than one tank");
+                    case PLAYER_TANK:
+                        if (playerTankPosition != null) {
+                            throw new IllegalArgumentException("Level describes more than one player tank");
                         }
-                        tankPosition = tile;
+                        playerTankPosition = tile;
+                        break;
+                    case AI_TANK:
+                        aiTanks.add(tile);
                         break;
                     case EMPTY:
                         break;
@@ -56,10 +61,10 @@ public class TextLevelSource implements LevelSource {
             }
         }
 
-        if (tankPosition == null) {
-            throw new IllegalArgumentException("Level does not describe a tank position");
+        if (playerTankPosition == null) {
+            throw new IllegalArgumentException("Level does not describe a player tank position");
         }
-        return new LevelLayout(width, height, tankPosition, trees);
+        return new LevelLayout(width, height, playerTankPosition, aiTanks, trees);
     }
 
     private List<String> meaningfulRows() {
