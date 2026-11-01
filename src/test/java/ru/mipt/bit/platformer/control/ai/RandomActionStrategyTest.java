@@ -1,12 +1,13 @@
 package ru.mipt.bit.platformer.control.ai;
 
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.BulletSettings;
 import ru.mipt.bit.platformer.model.Coordinates;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
+import ru.mipt.bit.platformer.model.TankSettings;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -14,26 +15,30 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class RandomDirectionStrategyTest {
+class RandomActionStrategyTest {
 
     private static final float SECONDS_PER_TILE = 0.4f;
+    private static final TankSettings SETTINGS =
+            new TankSettings(SECONDS_PER_TILE, 3, 0f, new BulletSettings(0.1f, 1));
     private static final Coordinates START = new Coordinates(5, 5);
+    private static final float NEVER_SHOOT = 0f;
+    private static final float ALWAYS_SHOOT = 1f;
 
-    private Tank createTank() {
-        return new Tank(START, Direction.RIGHT, SECONDS_PER_TILE);
-    }
+    private GameLevel level;
+    private Tank tank;
 
-    private GameLevel createLevel(Tank tank) {
-        return new GameLevel(10, 8, tank, Collections.emptyList(), Collections.emptyList());
+    private void createLevel() {
+        level = new GameLevel(10, 8);
+        tank = new Tank(START, Direction.RIGHT, SETTINGS, level);
+        level.addPlayerTank(tank);
     }
 
     @Test
     void movesTankToOneOfTheNeighbourTiles() {
-        Tank tank = createTank();
-        GameLevel level = createLevel(tank);
+        createLevel();
 
-        new RandomDirectionStrategy(level, new Random(1)).nextCommand(tank).execute();
-        level.update(SECONDS_PER_TILE);
+        new RandomActionStrategy(level, new Random(1), NEVER_SHOOT).nextCommand(tank).execute();
+        level.live(SECONDS_PER_TILE);
 
         assertNotEquals(START, tank.getPosition());
         int distance = Math.abs(tank.getPosition().getX() - START.getX())
@@ -43,29 +48,26 @@ class RandomDirectionStrategyTest {
 
     @Test
     void soonerOrLaterChoosesEveryDirection() {
-        Tank tank = createTank();
-        GameLevel level = createLevel(tank);
-        RandomDirectionStrategy strategy = new RandomDirectionStrategy(level, new Random(1));
+        createLevel();
+        RandomActionStrategy strategy = new RandomActionStrategy(level, new Random(1), NEVER_SHOOT);
 
         Set<Direction> chosen = new HashSet<>();
         for (int attempt = 0; attempt < 50; attempt++) {
             strategy.nextCommand(tank).execute();
             chosen.add(tank.getDirection());
-            level.update(SECONDS_PER_TILE);
+            level.live(SECONDS_PER_TILE);
         }
 
         assertEquals(Direction.values().length, chosen.size());
     }
 
     @Test
-    void sameSeedGivesSameChoice() {
-        Tank first = createTank();
-        new RandomDirectionStrategy(createLevel(first), new Random(123)).nextCommand(first).execute();
+    void shootsWhenProbabilitySaysSo() {
+        createLevel();
 
-        Tank second = createTank();
-        new RandomDirectionStrategy(createLevel(second), new Random(123)).nextCommand(second).execute();
+        new RandomActionStrategy(level, new Random(1), ALWAYS_SHOOT).nextCommand(tank).execute();
 
-        assertEquals(first.getDirection(), second.getDirection());
-        assertEquals(first.getDestination(), second.getDestination());
+        assertEquals(1, level.getBullets().size());
+        assertEquals(START, tank.getPosition());
     }
 }

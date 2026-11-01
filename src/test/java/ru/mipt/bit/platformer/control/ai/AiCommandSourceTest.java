@@ -2,21 +2,25 @@ package ru.mipt.bit.platformer.control.ai;
 
 import org.junit.jupiter.api.Test;
 import ru.mipt.bit.platformer.control.Command;
+import ru.mipt.bit.platformer.model.BulletSettings;
 import ru.mipt.bit.platformer.model.Coordinates;
 import ru.mipt.bit.platformer.model.Direction;
+import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
+import ru.mipt.bit.platformer.model.TankSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AiCommandSourceTest {
 
-    private static final float SECONDS_PER_TILE = 0.4f;
+    private static final TankSettings SETTINGS =
+            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1));
 
     private final List<Tank> asked = new ArrayList<>();
 
@@ -26,34 +30,49 @@ class AiCommandSourceTest {
         };
     };
 
-    private Tank tankAt(int x, int y) {
-        return new Tank(new Coordinates(x, y), Direction.RIGHT, SECONDS_PER_TILE);
+    private Tank tankAt(GameLevel level, int x, int y) {
+        return new Tank(new Coordinates(x, y), Direction.RIGHT, SETTINGS, level);
     }
 
     @Test
-    void asksStrategyForEveryIdleTank() {
-        Tank first = tankAt(1, 1);
-        Tank second = tankAt(2, 2);
+    void asksStrategyForEveryAiTank() {
+        GameLevel level = new GameLevel(10, 8);
+        Tank player = tankAt(level, 1, 1);
+        Tank firstAi = tankAt(level, 3, 3);
+        Tank secondAi = tankAt(level, 5, 5);
+        level.addPlayerTank(player);
+        level.addTank(firstAi);
+        level.addTank(secondAi);
 
-        List<Command> commands = new AiCommandSource(Arrays.asList(first, second), recordingStrategy).commands();
+        List<Command> commands = new AiCommandSource(level, recordingStrategy).commands();
 
         assertEquals(2, commands.size());
-        assertEquals(Arrays.asList(first, second), asked);
+        assertEquals(Arrays.asList(firstAi, secondAi), asked);
     }
 
     @Test
-    void doesNotDisturbTankWhichIsAlreadyMoving() {
-        Tank moving = tankAt(1, 1);
-        moving.move(Direction.UP);
+    void neverAsksForThePlayerTank() {
+        GameLevel level = new GameLevel(10, 8);
+        Tank player = tankAt(level, 1, 1);
+        level.addPlayerTank(player);
 
-        List<Command> commands = new AiCommandSource(Collections.singletonList(moving), recordingStrategy).commands();
-
-        assertTrue(commands.isEmpty());
-        assertTrue(asked.isEmpty());
+        assertTrue(new AiCommandSource(level, recordingStrategy).commands().isEmpty());
+        assertFalse(asked.contains(player));
     }
 
     @Test
-    void returnsNothingWhenThereAreNoAiTanks() {
-        assertTrue(new AiCommandSource(Collections.emptyList(), recordingStrategy).commands().isEmpty());
+    void stopsAskingForTankWhichLeftTheLevel() {
+        GameLevel level = new GameLevel(10, 8);
+        Tank player = tankAt(level, 1, 1);
+        Tank ai = tankAt(level, 3, 3);
+        level.addPlayerTank(player);
+        level.addTank(ai);
+        AiCommandSource source = new AiCommandSource(level, recordingStrategy);
+
+        assertEquals(1, source.commands().size());
+
+        level.removeObject(ai);
+
+        assertTrue(source.commands().isEmpty());
     }
 }
