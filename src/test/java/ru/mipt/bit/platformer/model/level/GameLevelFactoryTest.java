@@ -1,13 +1,18 @@
 package ru.mipt.bit.platformer.model.level;
 
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.BulletSettings;
 import ru.mipt.bit.platformer.model.Coordinates;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
-import ru.mipt.bit.platformer.model.Tank;
+import ru.mipt.bit.platformer.model.GameLevelListener;
+import ru.mipt.bit.platformer.model.GameObject;
+import ru.mipt.bit.platformer.model.TankSettings;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,7 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameLevelFactoryTest {
 
-    private final GameLevelFactory factory = new GameLevelFactory(0.4f, Direction.RIGHT);
+    private static final TankSettings SETTINGS =
+            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1));
+
+    private final GameLevelFactory factory = new GameLevelFactory(SETTINGS, Direction.RIGHT);
 
     @Test
     void buildsLevelFromAnyLevelSource() {
@@ -28,7 +36,6 @@ class GameLevelFactoryTest {
         assertEquals(new Coordinates(1, 1), level.getPlayerTank().getPosition());
         assertEquals(1, level.getAiTanks().size());
         assertEquals(new Coordinates(2, 2), level.getAiTanks().get(0).getPosition());
-        assertEquals(2, level.getObstacles().size());
         assertFalse(level.isFree(new Coordinates(0, 0)));
         assertFalse(level.isFree(new Coordinates(4, 1)));
         assertTrue(level.isFree(new Coordinates(2, 1)));
@@ -46,18 +53,24 @@ class GameLevelFactoryTest {
     }
 
     @Test
-    void givesEveryTankTheSameSpeed() {
-        GameLevel level = new GameLevelFactory(0.2f, Direction.UP)
-                .create(new TextLevelSource(Arrays.asList("_E_", "_X_")));
+    void reportsEveryInitialObjectToListener() {
+        List<GameObject> added = new ArrayList<>();
+        GameLevelListener listener = new GameLevelListener() {
+            @Override
+            public void objectAdded(GameObject object) {
+                added.add(object);
+            }
 
-        for (Tank tank : level.getTanks()) {
-            assertEquals(Direction.UP, tank.getDirection());
-        }
+            @Override
+            public void objectRemoved(GameObject object) {
+                added.remove(object);
+            }
+        };
 
-        Tank aiTank = level.getAiTanks().get(0);
-        level.moveTank(aiTank, Direction.LEFT);
-        level.update(0.2f);
+        GameLevel level = factory.create(new TextLevelSource(Arrays.asList("T_T", "EX_")),
+                Collections.singletonList(listener));
 
-        assertFalse(aiTank.isMoving());
+        assertEquals(level.getObjects(), added);
+        assertEquals(4, added.size());
     }
 }

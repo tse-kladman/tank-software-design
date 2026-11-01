@@ -29,6 +29,24 @@ public class Tree implements GameObject {
     }
 
     @Override
+    public boolean blocksMovement() {
+        return true;
+    }
+
+    @Override
+    public void live(float deltaTime) {
+    }
+
+    @Override
+    public void takeDamage(int damage) {
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return false;
+    }
+
+    @Override
     public float getRotation() {
         return 0f;
     }
