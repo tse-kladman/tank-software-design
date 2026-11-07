@@ -11,7 +11,7 @@ import ru.mipt.bit.platformer.util.TileMovement;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.drawTextureRegionUnscaled;
 
-public class ObjectGraphics {
+public class ObjectGraphics implements ObjectView {
 
     private final GameObject object;
     private final TextureRegion texture;
@@ -25,13 +25,20 @@ public class ObjectGraphics {
         this.bounds = createBoundingRectangle(texture);
     }
 
+    @Override
     public void update() {
         tileMovement.moveRectangleBetweenTileCenters(bounds, toGridPoint(object.getPosition()),
                 toGridPoint(object.getDestination()), object.getMovementProgress());
     }
 
+    @Override
     public void draw(Batch batch) {
         drawTextureRegionUnscaled(batch, texture, bounds, object.getRotation());
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return bounds;
     }
 
     private static GridPoint2 toGridPoint(Coordinates coordinates) {

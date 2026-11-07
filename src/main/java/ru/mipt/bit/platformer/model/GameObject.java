@@ -19,4 +19,8 @@ public interface GameObject {
     void takeDamage(int damage);
 
     boolean isDestroyed();
+
+    int getHealth();
+
+    int getMaxHealth();
 }

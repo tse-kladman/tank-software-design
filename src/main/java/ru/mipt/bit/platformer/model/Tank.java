@@ -55,8 +55,14 @@ public class Tank implements GameObject {
         bulletRegistry.register(new Bullet(direction.shift(destination), direction, settings.getBulletSettings()));
     }
 
+    @Override
     public int getHealth() {
         return health;
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return settings.getHealth();
     }
 
     public Direction getDirection() {

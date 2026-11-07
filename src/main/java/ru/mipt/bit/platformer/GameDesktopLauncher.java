@@ -14,6 +14,7 @@ import ru.mipt.bit.platformer.control.CommandSource;
 import ru.mipt.bit.platformer.control.CompositeCommandSource;
 import ru.mipt.bit.platformer.control.MoveCommand;
 import ru.mipt.bit.platformer.control.ShootCommand;
+import ru.mipt.bit.platformer.control.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.control.ai.AiCommandSource;
 import ru.mipt.bit.platformer.control.ai.RandomActionStrategy;
 import ru.mipt.bit.platformer.control.keyboard.GdxKeyboardState;
@@ -51,10 +52,10 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final String BULLET_TEXTURE = "images/bullet.png";
     private static final Color BACKGROUND = new Color(0f, 0f, 0.2f, 1f);
     private static final float TANK_SECONDS_PER_TILE = 0.4f;
-    private static final int TANK_HEALTH = 3;
+    private static final int TANK_HEALTH = 100;
     private static final float TANK_RELOAD_SECONDS = 0.7f;
     private static final float BULLET_SECONDS_PER_TILE = 0.12f;
-    private static final int BULLET_DAMAGE = 1;
+    private static final int BULLET_DAMAGE = 20;
     private static final float AI_SHOOT_PROBABILITY = 0.02f;
     private static final Direction TANK_INITIAL_DIRECTION = Direction.RIGHT;
     private static final int RANDOM_TREES_COUNT = 12;
@@ -118,6 +119,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.DOWN), Keys.DOWN, Keys.S);
         keyboard.bind(new MoveCommand(gameLevel, playerTank, Direction.RIGHT), Keys.RIGHT, Keys.D);
         keyboard.bind(new ShootCommand(playerTank), Keys.SPACE);
+        keyboard.bindOnPress(new ToggleHealthBarsCommand(levelRenderer), Keys.L);
         return keyboard;
     }
 

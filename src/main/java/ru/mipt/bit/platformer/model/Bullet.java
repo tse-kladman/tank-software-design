@@ -49,6 +49,16 @@ public class Bullet implements GameObject {
     }
 
     @Override
+    public int getHealth() {
+        return 0;
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return 0;
+    }
+
+    @Override
     public Coordinates getPosition() {
         return position;
     }

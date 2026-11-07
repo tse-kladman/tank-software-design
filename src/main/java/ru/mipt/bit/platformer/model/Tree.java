@@ -47,6 +47,16 @@ public class Tree implements GameObject {
     }
 
     @Override
+    public int getHealth() {
+        return 0;
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return 0;
+    }
+
+    @Override
     public float getRotation() {
         return 0f;
     }
