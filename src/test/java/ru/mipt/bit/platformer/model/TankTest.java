@@ -141,6 +141,14 @@ class TankTest {
     }
 
     @Test
+    void keepsItsStartingHealthAsMaximum() {
+        tank.takeDamage(1);
+
+        assertEquals(HEALTH - 1, tank.getHealth());
+        assertEquals(HEALTH, tank.getMaxHealth());
+    }
+
+    @Test
     void isDestroyedWhenHealthRunsOut() {
         tank.takeDamage(HEALTH);
 

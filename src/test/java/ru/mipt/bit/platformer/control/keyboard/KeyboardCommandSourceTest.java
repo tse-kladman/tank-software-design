@@ -38,6 +38,14 @@ class KeyboardCommandSourceTest {
             this.pressed = new HashSet<>(Arrays.asList(keyCodes));
         }
 
+        void press(int keyCode) {
+            pressed.add(keyCode);
+        }
+
+        void release(int keyCode) {
+            pressed.remove(keyCode);
+        }
+
         @Override
         public boolean isKeyPressed(int keyCode) {
             return pressed.contains(keyCode);
@@ -68,6 +76,32 @@ class KeyboardCommandSourceTest {
         source.bind(command("move"), FIRST_KEY);
 
         assertTrue(source.commands().isEmpty());
+    }
+
+    @Test
+    void returnsCommandBoundOnPressOnlyOnceWhileKeyIsHeld() {
+        KeyboardCommandSource source = new KeyboardCommandSource(new PressedKeys(FIRST_KEY));
+        source.bindOnPress(command("toggle"), FIRST_KEY);
+
+        executeAll(source.commands());
+        executeAll(source.commands());
+
+        assertEquals(Arrays.asList("toggle"), executed);
+    }
+
+    @Test
+    void returnsCommandBoundOnPressAgainAfterKeyWasReleased() {
+        PressedKeys keyboard = new PressedKeys(FIRST_KEY);
+        KeyboardCommandSource source = new KeyboardCommandSource(keyboard);
+        source.bindOnPress(command("toggle"), FIRST_KEY);
+
+        executeAll(source.commands());
+        keyboard.release(FIRST_KEY);
+        executeAll(source.commands());
+        keyboard.press(FIRST_KEY);
+        executeAll(source.commands());
+
+        assertEquals(Arrays.asList("toggle", "toggle"), executed);
     }
 
     @Test
