@@ -7,6 +7,7 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.TankSettings;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -19,7 +20,7 @@ class RandomActionStrategyTest {
 
     private static final float SECONDS_PER_TILE = 0.4f;
     private static final TankSettings SETTINGS =
-            new TankSettings(SECONDS_PER_TILE, 3, 0f, new BulletSettings(0.1f, 1));
+            new TankSettings(SECONDS_PER_TILE, 3, 0f, new BulletSettings(0.1f, 1), new DamageStates());
     private static final Coordinates START = new Coordinates(5, 5);
     private static final float NEVER_SHOOT = 0f;
     private static final float ALWAYS_SHOOT = 1f;

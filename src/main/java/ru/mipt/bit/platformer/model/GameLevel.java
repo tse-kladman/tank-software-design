@@ -2,7 +2,9 @@ package ru.mipt.bit.platformer.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameLevel implements BulletRegistry {
 
@@ -96,11 +98,40 @@ public class GameLevel implements BulletRegistry {
     }
 
     private void liveOnce(float deltaTime) {
+        Map<Bullet, Coordinates> tilesLeftBehind = new HashMap<>();
+        for (Bullet bullet : bullets) {
+            tilesLeftBehind.put(bullet, bullet.getPosition());
+        }
         for (GameObject object : new ArrayList<>(objects)) {
             object.live(deltaTime);
         }
+        resolveCrossingBullets(tilesLeftBehind);
         resolveBulletHits();
         removeDestroyed();
+    }
+
+    private void resolveCrossingBullets(Map<Bullet, Coordinates> tilesLeftBehind) {
+        List<Bullet> flying = new ArrayList<>(bullets);
+        for (int first = 0; first < flying.size(); first++) {
+            for (int second = first + 1; second < flying.size(); second++) {
+                crossOut(tilesLeftBehind, flying.get(first), flying.get(second));
+            }
+        }
+    }
+
+    private void crossOut(Map<Bullet, Coordinates> tilesLeftBehind, Bullet first, Bullet second) {
+        if (first.isDestroyed() || second.isDestroyed()) {
+            return;
+        }
+        Coordinates firstTile = tilesLeftBehind.get(first);
+        Coordinates secondTile = tilesLeftBehind.get(second);
+        if (firstTile == null || secondTile == null) {
+            return;
+        }
+        if (firstTile.equals(second.getPosition()) && secondTile.equals(first.getPosition())) {
+            first.destroy();
+            second.destroy();
+        }
     }
 
     private float shortestTileTime() {
@@ -126,7 +157,7 @@ public class GameLevel implements BulletRegistry {
             return;
         }
         for (GameObject object : new ArrayList<>(objects)) {
-            if (object == bullet || object.isDestroyed()) {
+            if (object == bullet || object == bullet.getOwner() || object.isDestroyed()) {
                 continue;
             }
             if (object.occupies(bullet.getPosition())) {

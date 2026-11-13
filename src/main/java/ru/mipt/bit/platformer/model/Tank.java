@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.model;
 
+import ru.mipt.bit.platformer.model.state.TankState;
+
 public class Tank implements GameObject {
 
     private static final float MOVEMENT_FINISHED = 1f;
@@ -12,6 +14,7 @@ public class Tank implements GameObject {
     private float movementProgress = MOVEMENT_FINISHED;
     private float timeSinceShot;
     private int health;
+    private TankState state;
 
     public Tank(Coordinates position, Direction direction, TankSettings settings, BulletRegistry bulletRegistry) {
         this.position = position;
@@ -21,6 +24,7 @@ public class Tank implements GameObject {
         this.bulletRegistry = bulletRegistry;
         this.health = settings.getHealth();
         this.timeSinceShot = settings.getReloadSeconds();
+        this.state = settings.getStates().stateFor(healthLeft());
     }
 
     public boolean isMoving() {
@@ -28,7 +32,7 @@ public class Tank implements GameObject {
     }
 
     public boolean isLoaded() {
-        return timeSinceShot >= settings.getReloadSeconds();
+        return timeSinceShot >= settings.getReloadSeconds() * state.getReloadFactor();
     }
 
     public void rotate(Direction direction) {
@@ -48,11 +52,11 @@ public class Tank implements GameObject {
     }
 
     public void shoot() {
-        if (isDestroyed() || !isLoaded()) {
+        if (isDestroyed() || !state.canShoot() || !isLoaded()) {
             return;
         }
         timeSinceShot = 0f;
-        bulletRegistry.register(new Bullet(direction.shift(destination), direction, settings.getBulletSettings()));
+        bulletRegistry.register(new Bullet(direction.shift(position), direction, settings.getBulletSettings(), this));
     }
 
     @Override
@@ -72,7 +76,7 @@ public class Tank implements GameObject {
     @Override
     public void live(float deltaTime) {
         timeSinceShot += deltaTime;
-        movementProgress = Math.min(movementProgress + deltaTime / settings.getSecondsPerTile(), MOVEMENT_FINISHED);
+        movementProgress = Math.min(movementProgress + deltaTime / secondsPerTile(), MOVEMENT_FINISHED);
         if (!isMoving()) {
             position = destination;
         }
@@ -81,6 +85,7 @@ public class Tank implements GameObject {
     @Override
     public void takeDamage(int damage) {
         health -= damage;
+        state = settings.getStates().stateFor(healthLeft());
     }
 
     @Override
@@ -116,5 +121,13 @@ public class Tank implements GameObject {
     @Override
     public boolean blocksMovement() {
         return true;
+    }
+
+    private float secondsPerTile() {
+        return settings.getSecondsPerTile() * state.getSecondsPerTileFactor();
+    }
+
+    private float healthLeft() {
+        return (float) health / settings.getHealth();
     }
 }

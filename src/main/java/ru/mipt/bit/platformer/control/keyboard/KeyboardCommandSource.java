@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** Adapter: key presses behind {@link CommandSource}. */
 public class KeyboardCommandSource implements CommandSource {
 
     private final KeyboardState keyboard;

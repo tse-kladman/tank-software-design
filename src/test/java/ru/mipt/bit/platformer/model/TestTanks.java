@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.model;
 
+import ru.mipt.bit.platformer.model.state.DamageStates;
+
 public final class TestTanks {
 
     public static final float SECONDS_PER_TILE = 0.4f;
@@ -17,7 +19,7 @@ public final class TestTanks {
 
     public static TankSettings settings(int health, int damage) {
         return new TankSettings(SECONDS_PER_TILE, health, RELOAD_SECONDS,
-                new BulletSettings(BULLET_SECONDS_PER_TILE, damage));
+                new BulletSettings(BULLET_SECONDS_PER_TILE, damage), new DamageStates());
     }
 
     public static Tank tankAt(BulletRegistry registry, int x, int y) {

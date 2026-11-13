@@ -6,6 +6,7 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.TankSettings;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 import ru.mipt.bit.platformer.model.BulletSettings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ShootCommandTest {
 
     private static final TankSettings SETTINGS =
-            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1));
+            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1), new DamageStates());
 
     @Test
     void asksItsOwnTankToShoot() {

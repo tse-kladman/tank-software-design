@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +10,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ru.mipt.bit.platformer.model.TestTanks.DAMAGE;
 import static ru.mipt.bit.platformer.model.TestTanks.HEALTH;
 import static ru.mipt.bit.platformer.model.TestTanks.RELOAD_SECONDS;
 import static ru.mipt.bit.platformer.model.TestTanks.SECONDS_PER_TILE;
+import static ru.mipt.bit.platformer.model.TestTanks.settings;
 import static ru.mipt.bit.platformer.model.TestTanks.settings;
 
 class TankTest {
@@ -67,7 +70,7 @@ class TankTest {
     @Test
     void slowerTankNeedsMoreTimeForTheSameStep() {
         TankSettings slow = new TankSettings(SECONDS_PER_TILE * 2, HEALTH, RELOAD_SECONDS,
-                new BulletSettings(0.1f, 1));
+                new BulletSettings(0.1f, 1), new DamageStates());
         Tank slowTank = new Tank(new Coordinates(1, 1), Direction.RIGHT, slow, fired::add);
 
         slowTank.move(Direction.UP);
@@ -132,12 +135,44 @@ class TankTest {
     }
 
     @Test
+    void firesFromTheTileItStandsOnWhileMoving() {
+        tank.move(Direction.UP);
+
+        tank.shoot();
+
+        assertEquals(new Coordinates(1, 2), fired.get(0).getPosition());
+    }
+
+    @Test
     void needsToReloadBetweenShots() {
         tank.shoot();
         tank.shoot();
 
         assertEquals(1, fired.size());
         assertFalse(tank.isLoaded());
+    }
+
+    @Test
+    void damagedTankNeedsTwiceAsLongForAStep() {
+        tank.takeDamage(1);
+
+        tank.move(Direction.UP);
+        tank.live(SECONDS_PER_TILE);
+        assertTrue(tank.isMoving());
+
+        tank.live(SECONDS_PER_TILE);
+        assertFalse(tank.isMoving());
+        assertEquals(new Coordinates(1, 2), tank.getPosition());
+    }
+
+    @Test
+    void heavilyDamagedTankHoldsFire() {
+        Tank damaged = new Tank(new Coordinates(1, 1), Direction.RIGHT, settings(10, DAMAGE), fired::add);
+        damaged.takeDamage(9);
+
+        damaged.shoot();
+
+        assertTrue(fired.isEmpty());
     }
 
     @Test

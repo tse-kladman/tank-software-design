@@ -30,6 +30,7 @@ import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.TankSettings;
 import ru.mipt.bit.platformer.model.Tree;
 import ru.mipt.bit.platformer.model.level.GameLevelFactory;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 import ru.mipt.bit.platformer.model.level.LevelSource;
 import ru.mipt.bit.platformer.model.level.RandomLevelSource;
 import ru.mipt.bit.platformer.model.level.TextLevelSource;
@@ -42,6 +43,7 @@ import java.util.Random;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
+/** Composition root and infrastructure: libGDX drives the game through {@link ApplicationListener}. */
 public class GameDesktopLauncher implements ApplicationListener {
 
     private static final String TILED_MAP_FILE = "level.tmx";
@@ -55,7 +57,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     private static final int TANK_HEALTH = 100;
     private static final float TANK_RELOAD_SECONDS = 0.7f;
     private static final float BULLET_SECONDS_PER_TILE = 0.12f;
-    private static final int BULLET_DAMAGE = 20;
+    private static final int BULLET_DAMAGE = 10;
     private static final float AI_SHOOT_PROBABILITY = 0.02f;
     private static final Direction TANK_INITIAL_DIRECTION = Direction.RIGHT;
     private static final int RANDOM_TREES_COUNT = 12;
@@ -97,7 +99,7 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private TankSettings createTankSettings() {
         return new TankSettings(TANK_SECONDS_PER_TILE, TANK_HEALTH, TANK_RELOAD_SECONDS,
-                new BulletSettings(BULLET_SECONDS_PER_TILE, BULLET_DAMAGE));
+                new BulletSettings(BULLET_SECONDS_PER_TILE, BULLET_DAMAGE), new DamageStates());
     }
 
     private LevelSource createLevelSource(int width, int height) {

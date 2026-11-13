@@ -23,6 +23,7 @@ import java.util.Map;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createSingleLayerMapRenderer;
 
+/** Adapter (infrastructure): draws the level with libGDX, follows it as {@link GameLevelListener}. */
 public class LevelRenderer implements GameLevelListener, HealthBarSwitch, Disposable {
 
     private final Batch batch;
