@@ -7,6 +7,7 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.TankSettings;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +15,7 @@ class MoveCommandTest {
 
     private static final float SECONDS_PER_TILE = 0.4f;
     private static final TankSettings SETTINGS =
-            new TankSettings(SECONDS_PER_TILE, 3, 0.5f, new BulletSettings(0.1f, 1));
+            new TankSettings(SECONDS_PER_TILE, 3, 0.5f, new BulletSettings(0.1f, 1), new DamageStates());
 
     private Tank tankAt(GameLevel level, int x, int y) {
         return new Tank(new Coordinates(x, y), Direction.RIGHT, SETTINGS, level);

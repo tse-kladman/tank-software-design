@@ -171,6 +171,31 @@ class GameLevelTest {
     }
 
     @Test
+    void bulletsFlyingAtEachOtherFromNeighbourTilesBothDisappear() {
+        BulletSettings bulletSettings = new BulletSettings(BULLET_SECONDS_PER_TILE, 1);
+        level.register(new Bullet(new Coordinates(3, 7), Direction.RIGHT, bulletSettings));
+        level.register(new Bullet(new Coordinates(4, 7), Direction.LEFT, bulletSettings));
+        assertEquals(2, level.getBullets().size());
+
+        level.live(BULLET_SECONDS_PER_TILE);
+
+        assertTrue(level.getBullets().isEmpty());
+    }
+
+    @Test
+    void movingTankIsNotHitByItsOwnBullet() {
+        Tank shooter = tankAt(3, 4);
+        level.addTank(shooter);
+        level.moveTank(shooter, Direction.RIGHT);
+
+        shooter.shoot();
+        level.live(BULLET_SECONDS_PER_TILE);
+
+        assertEquals(HEALTH, shooter.getHealth());
+        assertEquals(1, level.getBullets().size());
+    }
+
+    @Test
     void tankIsRemovedFromLevelWhenItsHealthRunsOut() {
         Tank shooter = tankAt(3, 4);
         Tank victim = tankAt(4, 4);

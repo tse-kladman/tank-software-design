@@ -4,16 +4,26 @@ public class Bullet implements GameObject {
 
     private final Direction direction;
     private final BulletSettings settings;
+    private final GameObject owner;
     private Coordinates position;
     private Coordinates destination;
     private float movementProgress;
     private boolean destroyed;
 
     public Bullet(Coordinates position, Direction direction, BulletSettings settings) {
+        this(position, direction, settings, null);
+    }
+
+    public Bullet(Coordinates position, Direction direction, BulletSettings settings, GameObject owner) {
         this.position = position;
         this.destination = direction.shift(position);
         this.direction = direction;
         this.settings = settings;
+        this.owner = owner;
+    }
+
+    public GameObject getOwner() {
+        return owner;
     }
 
     public float getSecondsPerTile() {

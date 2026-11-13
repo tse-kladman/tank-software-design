@@ -5,6 +5,7 @@ import ru.mipt.bit.platformer.model.Coordinates;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Adapter: text lines behind {@link LevelSource}. */
 public class TextLevelSource implements LevelSource {
 
     private static final char TREE = 'T';

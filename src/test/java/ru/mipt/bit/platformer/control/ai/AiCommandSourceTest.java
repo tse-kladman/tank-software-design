@@ -8,6 +8,7 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameLevel;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.TankSettings;
+import ru.mipt.bit.platformer.model.state.DamageStates;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AiCommandSourceTest {
 
     private static final TankSettings SETTINGS =
-            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1));
+            new TankSettings(0.4f, 3, 0.5f, new BulletSettings(0.1f, 1), new DamageStates());
 
     private final List<Tank> asked = new ArrayList<>();
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** Adapter (infrastructure): libGDX textures behind {@link Textures}. */
 public class TextureLibrary implements Textures, Disposable {
 
     private final Map<Class<? extends GameObject>, TextureRegion> regions = new HashMap<>();

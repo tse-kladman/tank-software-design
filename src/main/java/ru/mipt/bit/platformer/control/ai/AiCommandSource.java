@@ -8,6 +8,7 @@ import ru.mipt.bit.platformer.model.Tank;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Adapter: {@link TankStrategy} decisions behind {@link CommandSource}. */
 public class AiCommandSource implements CommandSource {
 
     private final GameLevel gameLevel;
